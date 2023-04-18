@@ -6,122 +6,354 @@
         <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
-        <link rel="stylesheet" href="./resources/ol.css">
-        <link rel="stylesheet" href="resources/fontawesome-all.min.css">
-        <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
-        <link rel="stylesheet" type="text/css" href="resources/ol3-search-layer.min.css">
-        <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
-        <link rel="stylesheet" href="./resources/qgis2web.css">
-<style>
-.search-layer {
-  top: 135px;
-  left: .5em;
-}
-.ol-touch .search-layer {
-  top: 180px;
-}
-</style>
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
         <style>
-        html, body {
-            background-color: #ffffff;
-        }
-        .ol-control button {
-            background-color: #f8f8f8 !important;
-            color: #000000 !important;
-            border-radius: 0px !important;
-        }
-        .ol-zoom, .geolocate, .gcd-gl-control .ol-control {
-            background-color: rgba(255,255,255,.4) !important;
-            padding: 3px !important;
-        }
-        .ol-scale-line {
-            background: none !important;
-        }
-        .ol-scale-line-inner {
-            border: 2px solid #f8f8f8 !important;
-            border-top: none !important;
-            background: rgba(255, 255, 255, 0.5) !important;
-            color: black !important;
-        }
-        </style>
-
-        <style>
-        .geolocate {
-            top: 65px;
-            left: .5em;
-        }
-        .ol-touch .geolocate {
-            top: 80px;
-        }
-        </style>
-<style>
-.tooltip {
-  position: relative;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 4px;
-  color: white;
-  padding: 4px 8px;
-  opacity: 0.7;
-  white-space: nowrap;
-}
-.tooltip-measure {
-  opacity: 1;
-  font-weight: bold;
-}
-.tooltip-static {
-  background-color: #ffcc33;
-  color: black;
-  border: 1px solid white;
-}
-.tooltip-measure:before,
-.tooltip-static:before {
-  border-top: 6px solid rgba(0, 0, 0, 0.5);
-  border-right: 6px solid transparent;
-  border-left: 6px solid transparent;
-  content: "";
-  position: absolute;
-  bottom: -6px;
-  margin-left: -7px;
-  left: 50%;
-}
-.tooltip-static:before {
-  border-top-color: #ffcc33;
-}
-.measure-control {
-  top: 100px;
-  left: .5em;
-}
-.ol-touch .measure-control {
-  top: 130px;
-}
-</style>
-        <style>
-        #map {
-            width: 1275px;
-            height: 672px;
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
         }
         </style>
         <title></title>
     </head>
     <body>
         <div id="map">
-            <div id="popup" class="ol-popup">
-                <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-                <div id="popup-content"></div>
-            </div>
         </div>
-        <script src="resources/qgis2web_expressions.js"></script>
-        <script src="resources/polyfills.js"></script>
-        <script src="./resources/functions.js"></script>
-        <script src="./resources/ol.js"></script>
-        <script src="http://cdn.polyfill.io/v2/polyfill.min.js?features=Element.prototype.classList,URL"></script>
-        <script src="resources/horsey.min.js"></script>
-        <script src="resources/ol3-search-layer.js"></script>
-        <script src="./resources/ol-layerswitcher.js"></script>
-        <script src="layers/Jagueyesdeptos_1.js"></script><script src="layers/JagueyesJagueyes1_2.js"></script><script src="layers/JagueyesJagueyes2_3.js"></script><script src="layers/Area_Estudio_4.js"></script>
-        <script src="styles/Jagueyesdeptos_1_style.js"></script><script src="styles/JagueyesJagueyes1_2_style.js"></script><script src="styles/JagueyesJagueyes2_3_style.js"></script><script src="styles/Area_Estudio_4_style.js"></script>
-        <script src="./layers/layers.js" type="text/javascript"></script> 
-        <script src="./resources/Autolinker.min.js"></script>
-        <script src="./resources/qgis2web.js"></script>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="data/GSMetaLimite3116_1.js"></script>
+        <script src="data/ecos_aptitud_2.js"></script>
+        <script>
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        })
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+            if (bounds_group.getLayers().length) {
+                map.fitBounds(bounds_group.getBounds());
+            }
+        }
+        map.createPane('pane_GoogleTerrain_0');
+        map.getPane('pane_GoogleTerrain_0').style.zIndex = 400;
+        var layer_GoogleTerrain_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleTerrain_0',
+            opacity: 1.0,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_GoogleTerrain_0;
+        map.addLayer(layer_GoogleTerrain_0);
+        function pop_GSMetaLimite3116_1(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['fid'] !== null ? autolinker.link(feature.properties['fid'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['OBJECTID'] !== null ? autolinker.link(feature.properties['OBJECTID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ACTO_ADMINISTRATIVO'] !== null ? autolinker.link(feature.properties['ACTO_ADMINISTRATIVO'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['OBSERVACION'] !== null ? autolinker.link(feature.properties['OBSERVACION'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['DEPARTAMENTO'] !== null ? autolinker.link(feature.properties['DEPARTAMENTO'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['COD_DEPARTAMENTO'] !== null ? autolinker.link(feature.properties['COD_DEPARTAMENTO'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['SHAPE_Length'] !== null ? autolinker.link(feature.properties['SHAPE_Length'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['SHAPE_Area'] !== null ? autolinker.link(feature.properties['SHAPE_Area'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Codigo'] !== null ? autolinker.link(feature.properties['Codigo'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_GSMetaLimite3116_1_0() {
+            return {
+                pane: 'pane_GSMetaLimite3116_1',
+                opacity: 1,
+                color: 'rgba(14,245,237,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 5.0, 
+                fillOpacity: 0,
+                interactive: false,
+            }
+        }
+        map.createPane('pane_GSMetaLimite3116_1');
+        map.getPane('pane_GSMetaLimite3116_1').style.zIndex = 401;
+        map.getPane('pane_GSMetaLimite3116_1').style['mix-blend-mode'] = 'normal';
+        var layer_GSMetaLimite3116_1 = new L.geoJson(json_GSMetaLimite3116_1, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_GSMetaLimite3116_1',
+            layerName: 'layer_GSMetaLimite3116_1',
+            pane: 'pane_GSMetaLimite3116_1',
+            onEachFeature: pop_GSMetaLimite3116_1,
+            style: style_GSMetaLimite3116_1_0,
+        });
+        bounds_group.addLayer(layer_GSMetaLimite3116_1);
+        map.addLayer(layer_GSMetaLimite3116_1);
+        function pop_ecos_aptitud_2(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">fid</th>\
+                        <td>' + (feature.properties['fid'] !== null ? autolinker.link(feature.properties['fid'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">gridcode</th>\
+                        <td>' + (feature.properties['gridcode'] !== null ? autolinker.link(feature.properties['gridcode'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">municipio</th>\
+                        <td>' + (feature.properties['municipio'] !== null ? autolinker.link(feature.properties['municipio'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">departamen</th>\
+                        <td>' + (feature.properties['departamen'] !== null ? autolinker.link(feature.properties['departamen'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">aptitud</th>\
+                        <td>' + (feature.properties['aptitud'] !== null ? autolinker.link(feature.properties['aptitud'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">area_ha</th>\
+                        <td>' + (feature.properties['area_ha'] !== null ? autolinker.link(feature.properties['area_ha'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">GRADO_TRAN</th>\
+                        <td>' + (feature.properties['GRADO_TRAN'] !== null ? autolinker.link(feature.properties['GRADO_TRAN'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">BIOMA_IAvH</th>\
+                        <td>' + (feature.properties['BIOMA_IAvH'] !== null ? autolinker.link(feature.properties['BIOMA_IAvH'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ECOS_SINTE</th>\
+                        <td>' + (feature.properties['ECOS_SINTE'] !== null ? autolinker.link(feature.properties['ECOS_SINTE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ECOS_GENER</th>\
+                        <td>' + (feature.properties['ECOS_GENER'] !== null ? autolinker.link(feature.properties['ECOS_GENER'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">UNIDAD_SIN</th>\
+                        <td>' + (feature.properties['UNIDAD_SIN'] !== null ? autolinker.link(feature.properties['UNIDAD_SIN'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">CLIMA</th>\
+                        <td>' + (feature.properties['CLIMA'] !== null ? autolinker.link(feature.properties['CLIMA'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">PAISAJE</th>\
+                        <td>' + (feature.properties['PAISAJE'] !== null ? autolinker.link(feature.properties['PAISAJE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">RELIEVE</th>\
+                        <td>' + (feature.properties['RELIEVE'] !== null ? autolinker.link(feature.properties['RELIEVE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">SUELOS</th>\
+                        <td>' + (feature.properties['SUELOS'] !== null ? autolinker.link(feature.properties['SUELOS'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">AMB_EDAFOG</th>\
+                        <td>' + (feature.properties['AMB_EDAFOG'] !== null ? autolinker.link(feature.properties['AMB_EDAFOG'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">DESC_AMB_E</th>\
+                        <td>' + (feature.properties['DESC_AMB_E'] !== null ? autolinker.link(feature.properties['DESC_AMB_E'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">COBERTURA</th>\
+                        <td>' + (feature.properties['COBERTURA'] !== null ? autolinker.link(feature.properties['COBERTURA'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>lineamient</strong><br />' + (feature.properties['lineamient'] !== null ? autolinker.link(feature.properties['lineamient'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_ecos_aptitud_2_0(feature) {
+            switch(String(feature.properties['PAISAJE'])) {
+                case 'Altiplanicie':
+                    return {
+                pane: 'pane_ecos_aptitud_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(123,50,148,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Lomerio':
+                    return {
+                pane: 'pane_ecos_aptitud_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(164,116,182,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'MontaÃ±a':
+                    return {
+                pane: 'pane_ecos_aptitud_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(202,177,213,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'N.A.':
+                    return {
+                pane: 'pane_ecos_aptitud_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(232,224,236,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Piedemonte':
+                    return {
+                pane: 'pane_ecos_aptitud_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(224,239,222,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Planicie aluvial':
+                    return {
+                pane: 'pane_ecos_aptitud_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(178,223,172,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Valle':
+                    return {
+                pane: 'pane_ecos_aptitud_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(95,183,115,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_ecos_aptitud_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,0.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(0,136,55,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_ecos_aptitud_2');
+        map.getPane('pane_ecos_aptitud_2').style.zIndex = 402;
+        map.getPane('pane_ecos_aptitud_2').style['mix-blend-mode'] = 'normal';
+        var layer_ecos_aptitud_2 = new L.geoJson(json_ecos_aptitud_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_ecos_aptitud_2',
+            layerName: 'layer_ecos_aptitud_2',
+            pane: 'pane_ecos_aptitud_2',
+            onEachFeature: pop_ecos_aptitud_2,
+            style: style_ecos_aptitud_2_0,
+        });
+        bounds_group.addLayer(layer_ecos_aptitud_2);
+        map.addLayer(layer_ecos_aptitud_2);
+        var baseMaps = {};
+        L.control.layers(baseMaps,{'ecos_aptitud<br /><table><tr><td style="text-align: center;"><img src="legend/ecos_aptitud_2_Altiplanicie0.png" /></td><td>Altiplanicie</td></tr><tr><td style="text-align: center;"><img src="legend/ecos_aptitud_2_Lomerio1.png" /></td><td>Lomerio</td></tr><tr><td style="text-align: center;"><img src="legend/ecos_aptitud_2_MontaÃa2.png" /></td><td>MontaÃ±a</td></tr><tr><td style="text-align: center;"><img src="legend/ecos_aptitud_2_NA3.png" /></td><td>N.A.</td></tr><tr><td style="text-align: center;"><img src="legend/ecos_aptitud_2_Piedemonte4.png" /></td><td>Piedemonte</td></tr><tr><td style="text-align: center;"><img src="legend/ecos_aptitud_2_Planiciealuvial5.png" /></td><td>Planicie aluvial</td></tr><tr><td style="text-align: center;"><img src="legend/ecos_aptitud_2_Valle6.png" /></td><td>Valle</td></tr><tr><td style="text-align: center;"><img src="legend/ecos_aptitud_2_7.png" /></td><td></td></tr></table>': layer_ecos_aptitud_2,'<img src="legend/GSMetaLimite3116_1.png" /> GSMeta — Limite3116': layer_GSMetaLimite3116_1,"Google Terrain": layer_GoogleTerrain_0,}).addTo(map);
+        setBounds();
+        </script>
     </body>
 </html>
